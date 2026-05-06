@@ -1,13 +1,13 @@
-FROM python:2
+FROM python:3.12-slim
 
-WORKDIR /usr/src/app
-
-RUN apt-get update && \
-    apt-get install -y python-fontforge
+WORKDIR /app
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENV PYTHONPATH /usr/local/lib/python2.7/site-packages
+COPY src ./src
 
-CMD [ "/usr/bin/python" ]
+WORKDIR /work
+
+ENTRYPOINT ["python3", "/app/src/main.py"]
+CMD ["--help"]
