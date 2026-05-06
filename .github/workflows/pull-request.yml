@@ -1,0 +1,31 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare README font fixture
+        run: cp tests/fixtures/Inconsolata_Condensed-Medium.ttf fonts/Inconsolata_Condensed-Medium.ttf
+
+      - name: Build Docker image
+        run: docker build -t font-patcher .
+
+      - name: Smoke test README command
+        run: |
+          docker run --rm -v "$PWD":/work font-patcher \
+              --factor=1.3 \
+              --input="/work/fonts/Inconsolata_Condensed-Medium.ttf" \
+              --outputDir="/work/fonts/patched"
+
+      - name: Verify README output file
+        run: test -f "fonts/patched/Inconsolata_Condensed-MediumPatched 1.3.ttf"
+
+      - name: Run test suite
+        run: docker run --rm --entrypoint python3 -v "$GITHUB_WORKSPACE":/work -w /work font-patcher -m unittest discover -s tests -v
